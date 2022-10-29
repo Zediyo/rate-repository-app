@@ -2,6 +2,7 @@ import { View, StyleSheet, ScrollView } from "react-native";
 import Constants from "expo-constants";
 import theme from "../theme";
 import AppBarTab from "./AppBarTab";
+import useMe from "../hooks/useMe";
 
 const styles = StyleSheet.create({
 	container: {
@@ -26,6 +27,8 @@ const styles = StyleSheet.create({
 
 const AppBar = () => 
 {
+	const { data } = useMe();
+
 	const onPressFunction = () =>
 	{
 
@@ -35,7 +38,11 @@ const AppBar = () =>
 		<View style={styles.container}>
 			<ScrollView horizontal contentContainerStyle={styles.scroll} >
 				<AppBarTab text="Repositories" onPress={onPressFunction} to="/"></AppBarTab>
-				<AppBarTab text="Sign In" onPress={onPressFunction} to="/signin"></AppBarTab>
+				{data ?
+					<AppBarTab text="Sign Out" onPress={onPressFunction} to="/signout"></AppBarTab> :
+					<AppBarTab text="Sign In" onPress={onPressFunction} to="/signin"></AppBarTab>
+				}
+	
 			</ScrollView>
 
 		</View>

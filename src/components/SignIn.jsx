@@ -4,6 +4,8 @@ import FormikTextInput from "./FormikTextInput";
 import { Formik } from "formik";
 import theme from "../theme";
 import * as yup from "yup";
+import useSignIn from "../hooks/useSignIn";
+import { useNavigate } from "react-router-native";
 
 const styles = StyleSheet.create({
 	container: {
@@ -57,7 +59,7 @@ const SignInForm = ({ onSubmit }) =>
 const validationSchema = yup.object().shape({
 	username: yup
 		.string()
-		.min(3, "Username must be atleast 5 characters long")
+		.min(3, "Username must be atleast 3 characters long")
 		.required("Enter username"),
 	password: yup
 		.string()
@@ -72,16 +74,22 @@ const initialValues = {
 
 const SignIn = () => 
 {
-	const onSubmit = (values) =>
-	{
-		// const mass = parseFloat(values.mass);
-		// const height = parseFloat(values.height);
+	const navigate = useNavigate();
+	const [doSignIn] = useSignIn();
 
-		// if (!isNaN(mass) && !isNaN(height) && height !== 0) 
-		// {
-		// 	console.log(`Your body mass index is: ${getBodyMassIndex(mass, height)}`);
-		// }
-		console.log(values);
+	const onSubmit = async (values) =>
+	{
+		const { username, password } = values;
+		try 
+		{
+			const data = await doSignIn( { username, password } );
+			console.log("AA: ", data.authenticate.accessToken);
+			navigate("/")
+		}
+		catch (e) 
+		{
+			console.log("BB: ", e);
+		}
 	};
 
 	return (
