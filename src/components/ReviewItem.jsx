@@ -1,9 +1,11 @@
-import { View, Image, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable } from "react-native";
 import theme from "../theme";
 import Text from "./Text";
 import { Dimensions } from "react-native";
 import { useNavigate } from "react-router-native";
 import * as Linking from "expo-linking";
+import { format, formatDistance, formatRelative, subDays } from "date-fns"
+
 
 const styles = StyleSheet.create({
 	container: {
@@ -63,13 +65,23 @@ const blockHStyles = StyleSheet.create({
 		margin: 10,
 	},
 	avatar: {
-		width: 45,
-		height: 45,
-		borderRadius: 45 / 2,
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "center",
+		borderStyle: "solid",
+		borderColor: "gray",
+		borderWidth: 1,
 	},
 	avatarContainer: {
 		flexGrow: 0,
 		paddingRight: 15,
+		borderStyle: "solid",
+		borderColor: "blue",
+		borderWidth: 3,
+		borderRadius: 45,
+		width: 50,
+		height: 50,
+		textAlign: "center",
 	},
 	infoContainer: {
 		flexGrow: 1,
@@ -79,6 +91,13 @@ const blockHStyles = StyleSheet.create({
 		flexDirection: "column",
 		flexGrow: 0,
 	},
+	potato2:
+	{
+		flexDirection: "column",
+		flexGrow: 0,
+		marginRight: 50,
+		marginLeft: 5,
+	},
 	miniBlock:
 	{
 		color: "white",
@@ -86,28 +105,38 @@ const blockHStyles = StyleSheet.create({
 	},
 	body: {
 		paddingVertical: 15,
+	},
+	text: {
+		textAlign: "center",
+		justifyContent: "center",
+		alignItems: "center",
+		color: "blue",
+		width: 40,
 	}
 });
 
 const BlockHeader = ({item}) => 
 {
+	const formatTime = (date) =>
+	{
+		const ret = format(new Date(date), "dd.MM.yyyy")
+		return ret
+	}
+
 	return (
 		<View style={blockHStyles.container}>
 			<View style={blockHStyles.avatarContainer}>
-				<Image
-					style={styles.tinyLogo}
-					source={{uri: item.ownerAvatarUrl}}
-				/>
+				<Text style={blockHStyles.text} fontSize="subheading" color="textSecondary">{item.rating}</Text>
 			</View>
-			<View style={blockHStyles.potato}>
+			<View style={blockHStyles.potato2}>
 				<View style={blockHStyles.infoContainer}>
-					<Text fontWeight="bold" fontSize="subheading">{item.fullName}</Text>	
+					<Text fontWeight="bold" fontSize="subheading">{item.user.username}</Text>	
 				</View>
 				<View style={blockHStyles.potato}>
-					<Text color="textSecondary">{item.description}</Text>
+					<Text color="textSecondary">{formatTime(item.createdAt)}</Text>
 				</View>
 				<View style={blockHStyles.potato}>
-					<Text style={blockHStyles.miniBlock}>{item.language}</Text>
+					<Text color="textSecondary">{item.text}</Text>
 				</View>
 			</View>
 
@@ -173,7 +202,7 @@ const GoToPageButton = ({url}) =>
 	)
 }
 
-const RepositoryItem = ({item, single}) => 
+const ReviewItem = ({item, single}) => 
 {
 	const navigate = useNavigate()
 
@@ -185,11 +214,10 @@ const RepositoryItem = ({item, single}) =>
 	return (
 		
 		<View testID="repositoryItem" style={styles.blockContainer}>
-			<Pressable onPress={goToPage}>
-				<BlockHeader item={item} />
-				<BlockInfo item={item} />
-			</Pressable>
-			{single && <GoToPageButton url={item.url}/>}
+			{/* <Pressable onPress={goToPage}> */}
+			<BlockHeader item={item} />
+			{/* </Pressable> */}
+			{/* {single && <GoToPageButton url={item.url}/>} */}
 		</View>
 
 	);
@@ -199,4 +227,4 @@ const RepositoryItem = ({item, single}) =>
 	<Text>TEXT</Text>
 </Pressable> */}
 
-export default RepositoryItem;
+export default ReviewItem;

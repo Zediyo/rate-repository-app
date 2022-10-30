@@ -39,8 +39,16 @@ const AppBar = () =>
 			<ScrollView horizontal contentContainerStyle={styles.scroll} >
 				<AppBarTab text="Repositories" onPress={onPressFunction} to="/"></AppBarTab>
 				{data ?
-					<AppBarTab text="Sign Out" onPress={onPressFunction} to="/signout"></AppBarTab> :
-					<AppBarTab text="Sign In" onPress={onPressFunction} to="/signin"></AppBarTab>
+					(
+						<>
+							<AppBarTab text="Create a review" onPress={onPressFunction} to="/createreview"></AppBarTab>
+							<AppBarTab text="Sign Out" onPress={onPressFunction} to="/signout"></AppBarTab>
+						</>) :
+					(
+						<>
+							<AppBarTab text="Sign In" onPress={onPressFunction} to="/signin"></AppBarTab>
+							<AppBarTab text="Sign Up" onPress={onPressFunction} to="/signup"></AppBarTab>
+						</>)
 				}
 	
 			</ScrollView>

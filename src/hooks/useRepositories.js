@@ -1,42 +1,98 @@
 //import { useState, useEffect } from "react";
 
 import { useQuery } from "@apollo/client";
+import { useEffect, useState } from "react";
 
 import { GET_REPOSITORIES } from "../graphql/queries";
+import { GET_REPOSITORIES_ORDER } from "../graphql/queries";
+import { GET_REPOSITORIES_FILTERED } from "../graphql/queries";
+import { GET_REPOSITORIES_ORDER_LIMIT } from "../graphql/queries";
 
-const useRepositories = () => 
+const getOrder = (order) =>
 {
-	//const [repositories, setRepositories] = useState();
-	//const [loading, setLoading] = useState(false);
-	const { data, error, loading } = useQuery(GET_REPOSITORIES, {
+	if ( order === "" )
+	{
+		return { ob: "CREATED_AT", od: "DESC" }
+	}
+
+	return { ob : "RATING_AVERAGE", od: order }
+}
+
+const useRepositories = ({o, first}) => 
+{
+	const [order, setOrder] = useState("")
+	const [filter, setFilter] = useState("")
+
+	const { data, error, loading, fetchMore } = useQuery(GET_REPOSITORIES_ORDER_LIMIT, {
 		fetchPolicy: "cache-and-network",
-		// Other options
+		variables: { first, ...getOrder(order) },
 	});
 
-	// const fetchRepositories = async () => 
+	const filtered = useQuery(GET_REPOSITORIES_FILTERED, {
+		fetchPolicy: "cache-and-network",
+		variables: { search: filter },
+		skip: !filter,
+	})
+
+	useEffect( () =>
+	{
+		switch(o)
+		{
+		case "RATING_DESC":
+			setOrder("DESC")
+			break;
+		case "RATING_ASC":
+			setOrder("ASC")
+			break
+		case "NONE":
+			setOrder("")
+			break
+		default:
+			setOrder("")
+		}
+		
+	}, [o])
+
+	const searchFiltered = (f) =>
+	{
+		setFilter(f)
+	}
+
+	const doFetchMore = () => 
+	{
+		const canFetchMore = !loading && data?.repositories.pageInfo.hasNextPage;
+
+		if (!canFetchMore) 
+		{
+			return;
+		}
+
+		fetchMore({
+			variables:
+			{
+				first,
+				after: data.repositories.pageInfo.endCursor,
+				...getOrder(order),
+			},
+		});
+	};
+
+	// useEffect( () =>
 	// {
-	// 	setLoading(true);
+	// 	console.log(filter)
+	// }, [filter])
 
-	// 	// Replace the IP address part with your own IP address!
-	// 	const response = await fetch("http://192.168.1.157:5000/api/repositories");
-	// 	const json = await response.json();
+	let retData = data;
 
-	// 	setLoading(false);
-	// 	setRepositories(json);
-	// };
+	if ( filtered.data && filtered.data.repositories )
+		retData = filtered.data
 
-	// useEffect(() => 
-	// {
-	// 	fetchRepositories();
-	// }, []);
-
-	//return { repositories, loading, refetch: fetchRepositories };
 	let ret = { edges: [] }
 
-	if ( data && data.repositories )
-		ret = data.repositories
-
-	return { repositories: ret, loading };
+	if ( retData && retData.repositories )
+		ret = retData.repositories
+		
+	return { repositories: ret, searchFiltered, doFetchMore };
 };
 
 export default useRepositories;

@@ -4,8 +4,9 @@ import FormikTextInput from "./FormikTextInput";
 import { Formik } from "formik";
 import theme from "../theme";
 import * as yup from "yup";
-import useSignIn from "../hooks/useSignIn";
 import { useNavigate } from "react-router-native";
+import useSignUp from "../hooks/useSignUp";
+import useSignIn from "../hooks/useSignIn";
 
 const styles = StyleSheet.create({
 	container: {
@@ -43,14 +44,15 @@ const styles = StyleSheet.create({
 });
 
 
-const SignInForm = ({ onSubmit }) => 
+const SignUpForm = ({ onSubmit }) => 
 {
 	return (
 		<View style={styles.container}>
 			<FormikTextInput style={styles.field} name="username" placeholder="Username" />
-			<FormikTextInput style={styles.field} secureTextEntry name="password" placeholder="Password" />
+			<FormikTextInput style={styles.field} name="password" placeholder="Password" secureTextEntry />
+			<FormikTextInput style={styles.field} name="password2" placeholder="Repeat password" secureTextEntry />
 			<Pressable style={styles.button} onPress={onSubmit}>
-				<Text style={{ color: "white"}}>Sign In</Text>
+				<Text style={{ color: "white"}}>Sign Up</Text>
 			</Pressable>
 		</View>
 	);
@@ -59,20 +61,27 @@ const SignInForm = ({ onSubmit }) =>
 const validationSchema = yup.object().shape({
 	username: yup
 		.string()
-		.min(3, "Username must be atleast 3 characters long")
-		.required("Enter username"),
+		.min(1, "Username must be atleast 1 character long")
+		.max(30, "Username must be less than 30 characters long")
+		.required("Username is required"),
 	password: yup
 		.string()
-		.min(3, "Password must be atleast 3 characters long")
-		.required("Enter password"),
+		.min(5, "Password must be atleast 5 characters long")
+		.max(50, "Password must be less than 50 characters long")
+		.required("Password is required"),
+	password2: yup
+		.string()
+		.oneOf([yup.ref("password"), null], "Passwords must be equal")
+		.required("Repeat password is required"),
 });
 
 const initialValues = {
 	username: "",
 	password: "",
+	password2: "",
 };
 
-export const FormikSignInForm = ({onSubmit}) =>
+export const FormikSignUpForm = ({onSubmit}) =>
 {
 	return (
 		<Formik
@@ -80,21 +89,24 @@ export const FormikSignInForm = ({onSubmit}) =>
 			onSubmit={onSubmit}
 			validationSchema={validationSchema}
 		>
-			{({ handleSubmit }) => <SignInForm onSubmit={handleSubmit} />}
+			{({ handleSubmit }) => <SignUpForm onSubmit={handleSubmit} />}
 		</Formik>
 	)
 }
 
-const SignIn = () => 
+const SignUp = () => 
 {
 	const navigate = useNavigate();
+	const [doSignUp] = useSignUp();
 	const [doSignIn] = useSignIn();
 
 	const onSubmit = async (values) =>
 	{
 		const { username, password } = values;
+		console.log(values);
 		try 
 		{
+			const result = await doSignUp( { username, password } );
 			const data = await doSignIn( { username, password } );
 			console.log("AA: ", data.authenticate.accessToken);
 			navigate("/")
@@ -106,8 +118,8 @@ const SignIn = () =>
 	};
 
 	return (
-		<FormikSignInForm onSubmit={onSubmit}/>
+		<FormikSignUpForm onSubmit={onSubmit}/>
 	)
 };
 
-export default SignIn;
+export default SignUp;

@@ -4,8 +4,8 @@ import FormikTextInput from "./FormikTextInput";
 import { Formik } from "formik";
 import theme from "../theme";
 import * as yup from "yup";
-import useSignIn from "../hooks/useSignIn";
 import { useNavigate } from "react-router-native";
+import useCreateReview from "../hooks/useCreateReview";
 
 const styles = StyleSheet.create({
 	container: {
@@ -43,36 +43,43 @@ const styles = StyleSheet.create({
 });
 
 
-const SignInForm = ({ onSubmit }) => 
+const CreateReviewForm = ({ onSubmit }) => 
 {
 	return (
 		<View style={styles.container}>
-			<FormikTextInput style={styles.field} name="username" placeholder="Username" />
-			<FormikTextInput style={styles.field} secureTextEntry name="password" placeholder="Password" />
+			<FormikTextInput style={styles.field} name="ownerName" placeholder="Repository owner name" />
+			<FormikTextInput style={styles.field} name="repositoryName" placeholder="Repository name" />
+			<FormikTextInput style={styles.field} name="rating" placeholder="Rating between 0 and 100" />
+			<FormikTextInput style={styles.field} multiline name="text" placeholder="Review" />
 			<Pressable style={styles.button} onPress={onSubmit}>
-				<Text style={{ color: "white"}}>Sign In</Text>
+				<Text style={{ color: "white"}}>Create a review</Text>
 			</Pressable>
 		</View>
 	);
 };
 
 const validationSchema = yup.object().shape({
-	username: yup
+	ownerName: yup
 		.string()
-		.min(3, "Username must be atleast 3 characters long")
-		.required("Enter username"),
-	password: yup
+		.required("Repository owner name is required"),
+	repositoryName: yup
 		.string()
-		.min(3, "Password must be atleast 3 characters long")
-		.required("Enter password"),
+		.required("Repository name is required"),
+	rating: yup
+		.number()
+		.positive("Must be a number between 0 and 100")
+		.lessThan(101, "Must be a number between 0 and 100")
+		.required("Rating is required"),
 });
 
 const initialValues = {
-	username: "",
-	password: "",
+	ownerName: "",
+	repositoryName: "",
+	rating: "",
+	text: "",
 };
 
-export const FormikSignInForm = ({onSubmit}) =>
+export const FormikCreateReviewForm = ({onSubmit}) =>
 {
 	return (
 		<Formik
@@ -80,24 +87,25 @@ export const FormikSignInForm = ({onSubmit}) =>
 			onSubmit={onSubmit}
 			validationSchema={validationSchema}
 		>
-			{({ handleSubmit }) => <SignInForm onSubmit={handleSubmit} />}
+			{({ handleSubmit }) => <CreateReviewForm onSubmit={handleSubmit} />}
 		</Formik>
 	)
 }
 
-const SignIn = () => 
+const ReviewForm = () => 
 {
 	const navigate = useNavigate();
-	const [doSignIn] = useSignIn();
+	const [doCreateReview] = useCreateReview();
 
 	const onSubmit = async (values) =>
 	{
-		const { username, password } = values;
+		const { ownerName, repositoryName, rating, text } = values;
+		console.log(values);
 		try 
 		{
-			const data = await doSignIn( { username, password } );
-			console.log("AA: ", data.authenticate.accessToken);
-			navigate("/")
+			const data = await doCreateReview( { ownerName, repositoryName, rating, text } );
+			const repId = data.createReview.repositoryId
+			navigate("/repository/" + repId)
 		}
 		catch (e) 
 		{
@@ -106,8 +114,8 @@ const SignIn = () =>
 	};
 
 	return (
-		<FormikSignInForm onSubmit={onSubmit}/>
+		<FormikCreateReviewForm onSubmit={onSubmit}/>
 	)
 };
 
-export default SignIn;
+export default ReviewForm;
